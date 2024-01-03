@@ -9,6 +9,7 @@ import (
 
 	"github.com/erdincmutlu/ecommerce/database"
 	"github.com/erdincmutlu/ecommerce/models"
+	"github.com/erdincmutlu/ecommerce/tokens"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson"
@@ -88,7 +89,7 @@ func Signup() gin.HandlerFunc {
 		user.ID = primitive.NewObjectID()
 		user.UserID = user.ID.Hex()
 
-		token, refreshToken, _ = generate.TokenGenerator(*user.Email, *user.FirstName, *user.LastName, user.UserID)
+		token, refreshToken, _ = tokens.TokenGenerator(*user.Email, *user.FirstName, *user.LastName, user.UserID)
 		user.Token = &token
 		user.RefreshToken = &refreshToken
 		user.UserCart = make([]models.ProductUser, 0)
@@ -131,7 +132,7 @@ func Login() gin.HandlerFunc {
 			return
 		}
 
-		token, refreshToken, _ := generate.TokenGenerator(*foundUser.Email,
+		token, refreshToken, _ := tokens.TokenGenerator(*foundUser.Email,
 			*foundUser.FirstName, *foundUser.LastName, foundUser.UserID)
 
 		generate.UpdateAllTokens(token, refreshToken, foundUser.UserID)
