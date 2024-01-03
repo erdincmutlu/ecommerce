@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/erdincmutlu/ecommerce/database"
+	"github.com/erdincmutlu/ecommerce/models"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -107,6 +109,42 @@ func GetItemFromCart() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
+		userIDH, _ := primitive.ObjectIDFromHex(userID)
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
+		var filledCart models.User
+		err := UserCollection.FindOne(ctx, bson.D{primitive.E{Key: "_id", Value: userIDH}}).Decode(filledCart)
+		if err != nil {
+			log.Println(err.Error())
+			c.IndentedJSON(http.StatusInternalServerError, "not found")
+			return
+		}
+
+		filterMatch := bson.D{{Key: "$match", Value: bson.D{primitive.E{Key: "_id", Value: userIDH}}}}
+		unwind := bson.D{{Key: "$unwind", Value: bson.D{primitive.E{Key: "path", Value: "$usercart"}}}}
+		grouping := bson.D{{Key: "$group", Value: bson.D{primitive.E{Key: "_id", Value: "$_id"},
+			{Key: "total", Value: bson.D{
+				primitive.E{Key: "$sum", Value: "$usercart.price"}}}}},
+		}
+		pointCursor, err := UserCollection.Aggregate(ctx, mongo.Pipeline{filterMatch, unwind, grouping})
+		if err != nil {
+			log.Println(err.Error())
+		}
+		var listing []bson.M
+		err = pointCursor.All(ctx, &listing)
+		if err != nil {
+			log.Println(err.Error())
+			c.AbortWithStatus(http.StatusInternalServerError)
+		}
+
+		for _, json := range listing {
+			c.IndentedJSON(http.StatusOK, json["total"])
+			c.IndentedJSON(http.StatusOK, filledCart.UserCart)
+		}
+
+		ctx.Done()
 
 	}
 }

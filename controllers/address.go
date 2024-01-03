@@ -34,7 +34,7 @@ func DeleteAddress() gin.HandlerFunc {
 		}
 
 		addresses := make([]models.Address, 0)
-		userID, err := primitive.ObjectIDFromHex(userID)
+		userIDH, err := primitive.ObjectIDFromHex(userID)
 		if err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, "Internal Server Error")
 		}
@@ -42,7 +42,7 @@ func DeleteAddress() gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
-		filter := bson.D{primitive.E{Key: "_id", Value: userID}}
+		filter := bson.D{primitive.E{Key: "_id", Value: userIDH}}
 		update := bson.D{{Key: "$set", Value: bson.D{primitive.E{Key: "address", Value: addresses}}}}
 		_, err = UserCollection.UpdateOne(ctx, filter, update)
 		if err != nil {
