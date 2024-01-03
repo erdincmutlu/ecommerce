@@ -88,6 +88,12 @@ func EditHomeAddress() gin.HandlerFunc {
 			c.IndentedJSON(http.StatusInternalServerError, "Internal Server Error")
 		}
 
+		var editAddress models.Address
+		err = c.BindJSON(&editAddress)
+		if err != nil {
+			c.IndentedJSON(http.StatusBadRequest, err.Error())
+		}
+
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
