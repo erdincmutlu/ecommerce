@@ -1,13 +1,17 @@
 package tokens
 
 import (
+	"context"
 	"log"
 	"os"
 	"time"
 
 	"github.com/erdincmutlu/ecommerce/database"
 	"github.com/golang-jwt/jwt/v5"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type SignedDetails struct {
@@ -78,6 +82,27 @@ func ValidateToken(signedToken string) (*SignedDetails, string) {
 	return claims, ""
 }
 
-func UpdateAllTokens() {
+func UpdateAllTokens(signedToken string, signedRefreshToken string, userID string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+	defer cancel()
+	var updateObj primitive.D
 
+	updateObj = append(updateObj, bson.E{Key: "token", Value: signedToken})
+	updateObj = append(updateObj, bson.E{Key: "refresh_token", Value: signedRefreshToken})
+	updatedAt, _ := time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+	updateObj = append(updateObj, bson.E{Key: "updatedat", Value: updatedAt})
+
+	upsert := true
+	filter := bson.M{"user_id": userID}
+	opt := options.UpdateOptions{
+		Upsert: &upsert,
+	}
+	_, err := UserData.UpdateOne(ctx, filter, bson.D{
+		{Key: "$set", Value: updateObj},
+	},
+		&opt)
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
 }
