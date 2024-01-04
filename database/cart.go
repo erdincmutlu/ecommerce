@@ -52,8 +52,24 @@ func AddProductToCart(ctx context.Context, prodCollection *mongo.Collection,
 	return nil
 }
 
-func RemoveCartItem() {
+func RemoveCartItem(ctx context.Context, prodCollection *mongo.Collection,
+	userCollection *mongo.Collection, productID primitive.ObjectID, userID string) error {
 
+	id, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		log.Println(err.Error())
+		return ErrUserIdIsNotValid
+	}
+
+	filter := bson.D{primitive.E{Key: "_id", Value: id}}
+	update := bson.M{"$pull": bson.M{"usercart": bson.M{"_id": productID}}}
+	_, err = userCollection.UpdateMany(ctx, filter, update)
+	if err != nil {
+		log.Println(err.Error())
+		return ErrCantRemoveItemCart
+	}
+
+	return nil
 }
 
 func BuyItemFromCart() error {
