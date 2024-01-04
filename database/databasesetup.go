@@ -31,7 +31,7 @@ func DBSet() *mongo.Client {
 	}
 
 	fmt.Printf("Successfully connectted to mongodb")
-	return &client
+	return client
 }
 
 var Client *mongo.Client = DBSet()

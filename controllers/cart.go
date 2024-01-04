@@ -166,7 +166,7 @@ func (app *Application) BuyFromCart() gin.HandlerFunc {
 			return
 		}
 
-		c.IndentedJSON("Successfully placed the order")
+		c.IndentedJSON(http.StatusOK, "Successfully placed the order")
 	}
 }
 

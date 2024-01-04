@@ -89,7 +89,7 @@ func Signup() gin.HandlerFunc {
 		user.ID = primitive.NewObjectID()
 		user.UserID = user.ID.Hex()
 
-		token, refreshToken, _ = tokens.TokenGenerator(*user.Email, *user.FirstName, *user.LastName, user.UserID)
+		token, refreshToken, _ := tokens.TokenGenerator(*user.Email, *user.FirstName, *user.LastName, user.UserID)
 		user.Token = &token
 		user.RefreshToken = &refreshToken
 		user.UserCart = make([]models.ProductUser, 0)
@@ -119,6 +119,7 @@ func Login() gin.HandlerFunc {
 			return
 		}
 
+		var foundUser models.User
 		err = UserCollection.FindOne(ctx, bson.M{"email": *user.Email}).Decode(&foundUser)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "login or password incorrect"})
@@ -135,7 +136,7 @@ func Login() gin.HandlerFunc {
 		token, refreshToken, _ := tokens.TokenGenerator(*foundUser.Email,
 			*foundUser.FirstName, *foundUser.LastName, foundUser.UserID)
 
-		generate.UpdateAllTokens(token, refreshToken, foundUser.UserID)
+		tokens.UpdateAllTokens(token, refreshToken, foundUser.UserID)
 		c.JSON(http.StatusFound, foundUser)
 	}
 }
