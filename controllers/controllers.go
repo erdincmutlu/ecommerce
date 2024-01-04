@@ -147,20 +147,20 @@ func ProductViewerAdmin() gin.HandlerFunc {
 		defer cancel()
 
 		var product models.Product
-		err := c.BindJSON(&products)
+		err := c.BindJSON(&product)
 		if err != nil {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{"error"; err.Error()})
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-        product.ProductID=primitive.NewObjectID()
-        _, err= ProductCollection.InsertOne(ctx, product)
-        if err != nil {
-            c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "not inserted"})
-            return
-        }
+		product.ProductID = primitive.NewObjectID()
+		_, err = ProductCollection.InsertOne(ctx, product)
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "not inserted"})
+			return
+		}
 
-        c.JSON(http.StatusOK, "Successfully added")
+		c.JSON(http.StatusOK, "Successfully added")
 	}
 }
 
