@@ -28,29 +28,18 @@ var SECRET_KEY = os.Getenv("SECRET_KEY")
 
 func TokenGenerator(email string, firstName string, lastName string, uid string,
 ) (string, string, error) {
-	claims := &SignedDetails{
-		Email:     email,
-		FirstName: firstName,
-		LastName:  lastName,
-		Uid:       uid,
-		Claims: jwt.Claims{
-			ExpiresAt: time.Now().Local().Add(24 * time.Hour).Unix(),
-		},
-	}
-
-	refreshClaims := SignedDetails{
-		Claims: jwt.Claims{
-			ExpiresAt: time.Now().Local().Add(168 * time.Hour).Unix(),
-		},
-	}
-
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(SECRET_KEY))
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email":     email,
+		"firstName": firstName,
+		"lastName":  lastName,
+		"uid":       uid,
+	}).SignedString([]byte(SECRET_KEY))
 	if err != nil {
 		log.Println(err.Error())
 		return "", "", err
 	}
 
-	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(SECRET_KEY))
+	refreshToken, err := jwt.New(jwt.SigningMethodHS256).SignedString([]byte(SECRET_KEY))
 	if err != nil {
 		log.Println(err.Error())
 		return "", "", err

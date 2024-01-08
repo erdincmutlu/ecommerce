@@ -11,15 +11,10 @@ import (
 )
 
 func DBSet() *mongo.Client {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongo://localhost:27017"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	err = client.Connect(ctx)
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -30,7 +25,7 @@ func DBSet() *mongo.Client {
 		return nil
 	}
 
-	fmt.Printf("Successfully connectted to mongodb")
+	fmt.Printf("Successfully connected to mongodb")
 	return client
 }
 

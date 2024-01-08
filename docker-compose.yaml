@@ -1,0 +1,17 @@
+services:
+  mongo:
+    image: mongo:4.4.26
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: development
+      MONGO_INITDB_ROOT_PASSWORD: testpassword
+
+  mongo-express:
+    image: mongo-express:1.0.0-18
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGO_INITDB_ROOT_USERNAME: development
+      ME_MONGO_INITDB_ROOT_USERNAME: development
+      ME_CONFIG_MONGODB_URL: mongodb://development:testpassword@mongo:27017/
