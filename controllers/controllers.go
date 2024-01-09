@@ -53,10 +53,11 @@ func Signup() gin.HandlerFunc {
 
 		validationErr := validate.Struct(user)
 		if validationErr != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr})
+			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
 			return
 		}
 
+		fmt.Printf("Calling  UserCollection.CountDocuments {email}\n")
 		count, err := UserCollection.CountDocuments(ctx, bson.M{"email": user.Email})
 		if err != nil {
 			log.Panic(err)
@@ -102,7 +103,7 @@ func Signup() gin.HandlerFunc {
 			return
 		}
 
-		c.JSON(http.StatusCreated, "Successfully signed in!")
+		c.JSON(http.StatusCreated, "Successfully signed up!")
 
 	}
 }
